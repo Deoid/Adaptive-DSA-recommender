@@ -170,15 +170,29 @@ class ClientEngine {
       overall_elo: 1375,
     };
 
+    const TOPIC_INITIAL_DATA = {
+      'Math & Number Theory': { mastery: 0.74, elo: 1480, accuracy: 0.80, attempts: 44, status: 'Competent' },
+      'Binary Search & Two Pointers': { mastery: 0.68, elo: 1430, accuracy: 0.75, attempts: 48, status: 'Competent' },
+      'Data Structures (Stack, Queue, Heap, DSU)': { mastery: 0.58, elo: 1390, accuracy: 0.65, attempts: 51, status: 'Developing' },
+      'Greedy Algorithms': { mastery: 0.52, elo: 1350, accuracy: 0.60, attempts: 38, status: 'Developing' },
+      'Dynamic Programming': { mastery: 0.38, elo: 1280, accuracy: 0.45, attempts: 42, status: 'Developing' },
+      'Graph Algorithms': { mastery: 0.41, elo: 1290, accuracy: 0.48, attempts: 35, status: 'Developing' },
+      'Trees & Binary Search Trees': { mastery: 0.46, elo: 1320, accuracy: 0.52, attempts: 29, status: 'Developing' },
+      'Bit Manipulation': { mastery: 0.44, elo: 1310, accuracy: 0.50, attempts: 24, status: 'Developing' },
+      'Backtracking & Recursion': { mastery: 0.34, elo: 1260, accuracy: 0.42, attempts: 30, status: 'Novice' },
+      'Strings & Tries': { mastery: 0.28, elo: 1240, accuracy: 0.35, attempts: 26, status: 'Novice' },
+    };
+
     this.masteryMap = {};
     TOPICS.forEach((t) => {
+      const init = TOPIC_INITIAL_DATA[t] || { mastery: 0.45, elo: 1320, accuracy: 0.5, attempts: 20, status: 'Developing' };
       this.masteryMap[t] = {
         topic: t,
-        mastery_probability: 0.25,
-        topic_elo: 1350,
-        status: 'Developing',
-        total_attempts: 12,
-        recent_accuracy: 0.6,
+        mastery_probability: init.mastery,
+        topic_elo: init.elo,
+        status: init.status,
+        total_attempts: init.attempts,
+        recent_accuracy: init.accuracy,
       };
     });
   }
