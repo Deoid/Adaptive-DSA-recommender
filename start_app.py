@@ -1,0 +1,10 @@
+import uvicorn
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("  Adaptive DSA Recommendation Engine")
+    print("  FastAPI · PostgreSQL · Codeforces · BKT · Elo")
+    print("  Server running at: http://localhost:8000")
+    print("  Swagger Docs at:   http://localhost:8000/docs")
+    print("=" * 60)
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
