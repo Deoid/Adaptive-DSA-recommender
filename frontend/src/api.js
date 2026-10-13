@@ -307,12 +307,12 @@ export const platformApi = {
             codeforces: { handle: clientEngine.user.codeforces_handle, rating: 946, rank: 'newbie', maxRating: 1050 },
             leetcode: { handle: clientEngine.user.leetcode_handle, rating: 1540, global_ranking: 45000, easy: 45, medium: 52, hard: 5 },
             codechef: { handle: clientEngine.user.codechef_handle, rating: 1368, stars: '1★', global_rank: 51000 },
-            atcoder: { handle: clientEngine.user.atcoder_handle, rating: 1050, tier: 'Green', highest_rating: 1100 },
+            atcoder: { handle: clientEngine.user.atcoder_handle, rating: 112, tier: 'Gray', highest_rating: 112 },
             overall_unified_elo: 1375,
           },
           problems_solved: {
-            combined_total: 367,
-            platform_breakdown: { codeforces: 134, leetcode: 102, codechef: 131, atcoder: 0 },
+            combined_total: 386,
+            platform_breakdown: { codeforces: 140, leetcode: 102, codechef: 131, atcoder: 13 },
             topic_breakdown: {
               'Dynamic Programming': 42,
               'Graph Algorithms': 35,
