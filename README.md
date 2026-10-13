@@ -1,195 +1,187 @@
-# Adaptive DSA Recommendation Engine
+# 🚀 ADR: Adaptive DSA Recommendation Engine
 
-> **Tech Stack:** Python · FastAPI · PostgreSQL · Codeforces API · LeetCode GraphQL · CodeChef · AtCoder API · Bayesian Knowledge Tracing (BKT) · Elo Rating Systems · React · Vite · Tailwind CSS
-
-An intelligent competitive programming and Data Structures & Algorithms (DSA) recommendation system that links solver profiles across **Codeforces**, **LeetCode**, **CodeChef**, and **AtCoder**, tracks topic-level cognitive mastery via **Bayesian Knowledge Tracing (BKT)** over a sliding window of recent submissions, and surfaces questions mathematically tailored to maximize solver skill growth using an **Elo-based Zone of Proximal Development (ZPD)** matching layer.
-
----
-
-## 🌟 Key Features
-
-1. **4-Platform Profile & Rating Linkage**:
-   - **Codeforces**: Official API integration for handle rating, max rating, contest rank, and recent verdicts (`OK`, `WRONG_ANSWER`, `TIME_LIMIT_EXCEEDED`).
-   - **LeetCode**: GraphQL public API fetching contest rating, global ranking, and solved breakdown (Easy, Medium, Hard, and tag skill counts).
-   - **CodeChef**: Profile scraper extracting current rating, star tier (e.g. 1★–7★), global rank, and total solved count.
-   - **AtCoder**: Kenkoooo API integration extracting rating, highest rating, and official color tiers (Gray, Brown, Green, Cyan, Blue, Yellow, Orange, Red).
-
-2. **Cross-Platform Solved Aggregation & Canonical Topic Taxonomy**:
-   - Computes the combined total number of problems solved across all 4 platforms.
-   - Normalizes diverse platform tags into 10 Canonical DSA Topics:
-     1. *Dynamic Programming*
-     2. *Graph Algorithms*
-     3. *Trees & Binary Search Trees*
-     4. *Binary Search & Two Pointers*
-     5. *Greedy Algorithms*
-     6. *Data Structures (Stack, Queue, Heap, DSU)*
-     7. *Math & Number Theory*
-     8. *Strings & Tries*
-     9. *Bit Manipulation*
-     10. *Backtracking & Recursion*
-   - Visualizes categorized problems solved per topic via interactive bar and distribution charts.
-
-3. **Per-Topic Bayesian Knowledge Tracing (BKT)**:
-   - Implements BKT over a sliding window of the **last 20 submissions per topic**.
-   - Standard 4-parameter formulation:
-     - $L_0 = 0.15$ (Prior probability of knowing the skill)
-     - $T = 0.10$ (Transition/learning probability between problem attempts)
-     - $G = 0.15$ (Guess probability: solving without mastery)
-     - $S = 0.08$ (Slip probability: failing despite mastery)
-   - Posterior update after an Accepted ($k = \text{Correct}$) or Wrong-Answer ($k = \text{Incorrect}$) verdict:
-     $$P(L | \text{Correct}) = \frac{P(L) \cdot (1 - S)}{P(L) \cdot (1 - S) + (1 - P(L)) \cdot G}$$
-     $$P(L | \text{Incorrect}) = \frac{P(L) \cdot S}{P(L) \cdot S + (1 - P(L)) \cdot (1 - G)}$$
-     $$P(L_k) = P(L | \text{Outcome}) + (1 - P(L | \text{Outcome})) \cdot T$$
-   - Categorizes mastery status: *Novice* ($<35\%$), *Developing* ($35\%-59\%$), *Competent* ($60\%-79\%$), *Mastered* ($\ge 80\%$).
-
-4. **Elo Rating & Zone of Proximal Development (ZPD) Matcher**:
-   - Calculates solver expected win probability:
-     $$E = \frac{1}{1 + 10^{(R_{\text{problem}} - R_{\text{user}}) / 400}}$$
-   - Evaluates cognitive learning suitability using a Gaussian curve centered at the optimal challenge frontier ($\Delta_{\text{target}} = +75$ Elo):
-     $$\text{ZPD\_Fit}(R_{\text{problem}}, R_{\text{user}}) = \exp\left(-\frac{(R_{\text{problem}} - (R_{\text{user}} + 75))^2}{2 \cdot 180^2}\right)$$
-   - Dynamically shifts solver Elo using $K = 24$:
-     $$R_{\text{new}} = R_{\text{old}} + K \cdot (\text{Actual} - \text{Expected})$$
-
-5. **Adaptive Recommendation Ranking Engine**:
-   - Behind a high-performance FastAPI endpoint (`GET /api/recommendations`), filters out all previously solved problems across all 4 platforms and fuses the BKT mastery vector with the Elo difficulty match score:
-     $$\text{Composite Score} = w_{\text{zpd}} \cdot \text{ZPD\_Fit} + w_{\text{bkt}} \cdot (1 - P(L_{\text{topic}}))$$
-   - Supports focus modes:
-     - **Balanced ZPD**: $w_{\text{zpd}} = 0.55, w_{\text{bkt}} = 0.45$
-     - **Weakness Focus**: $w_{\text{zpd}} = 0.35, w_{\text{bkt}} = 0.65$
-     - **Rating Push**: $w_{\text{zpd}} = 0.75, w_{\text{bkt}} = 0.25$
-   - Generates transparent explainability rationales for each problem.
-
-6. **Interactive Sandbox & Full Web Application**:
-   - JWT authentication (`/api/auth/register`, `/api/auth/login`, `/api/auth/me`).
-   - Real-time verdict logger: click `[Mark AC]` or `[Mark WA]` to watch BKT and Elo adapt immediately.
-   - Interactive BKT simulator sandbox to model hypothetical sequences.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Ready-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+  <img src="https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
+</p>
 
 ---
 
-## 🏗️ Architecture
+## 📌 Overview
 
+**ADR (Adaptive DSA Recommender)** is an intelligent competitive programming and Data Structures & Algorithms learning engine. 
+
+Instead of solving random problems or grinding without direction, ADR:
+1. **Aggregates your real coder profiles across 4 major platforms**: **Codeforces**, **LeetCode**, **CodeChef**, and **AtCoder**.
+2. **Models your topic-by-topic mastery** in real time using **Bayesian Knowledge Tracing (BKT)** over a sliding window of your recent submissions.
+3. **Identifies your Zone of Proximal Development (ZPD)** via continuous **Elo-based difficulty matching**, surfacing the exact problems that maximize skill growth while preventing cognitive overload or boredom.
+
+---
+
+## ⚡ Key Highlights
+
+### 1. 🌐 Unified 4-Platform Profile Linkage
+- **Codeforces**: Official API integration tracking current rating, max rating, contest rank, and verdicts (`OK`, `WRONG_ANSWER`, `TIME_LIMIT_EXCEEDED`).
+- **LeetCode**: GraphQL public API tracking contest rating, global ranking, and problem breakdown across Easy, Medium, and Hard.
+- **CodeChef**: Profile scraper extracting live rating, stars tier (1★ to 7★), global rank, and total solved problems.
+- **AtCoder**: Kenkoooo API integration extracting algorithm rating, highest rating, and official color tiers.
+- **Combined Aggregation**: Calculates your unified solve count across all 4 platforms and categorizes problems into **10 Canonical DSA Topics**.
+
+### 2. 🧠 Per-Topic Bayesian Knowledge Tracing (BKT)
+Maintains an evolving probability vector $P(L_t) \in [0.0, 1.0]$ for each DSA topic over a **sliding window of the last 20 attempts**:
+- **$L_0 = 0.15$**: Prior probability of skill mastery.
+- **$T = 0.10$**: Learning transition probability between attempts.
+- **$G = 0.15$**: Guess probability (solving without complete mastery).
+- **$S = 0.08$**: Slip probability (failing due to execution mistakes despite mastery).
+- Updates dynamically after every **Accepted (AC)** or **Wrong Answer (WA)** verdict.
+- Automatically classifies topic mastery into:
+  - 🔴 **Novice** ($< 35\%$)
+  - 🟡 **Developing** ($35\% - 59\%$)
+  - 🔵 **Competent** ($60\% - 79\%$)
+  - 🟢 **Mastered** ($\ge 80\%$)
+
+### 3. 🎯 Elo-Based Zone of Proximal Development (ZPD) Matcher
+- Computes expected solve probability using logistic Elo curves:
+  ```text
+  E = 1 / (1 + 10 ^ ((Rating_problem - Rating_user) / 400))
+  ```
+- Evaluates growth potential using a Gaussian suitability distribution centered at the optimal challenge point ($\Delta = +75$ Elo points above current solver rating):
+  ```text
+  ZPD_Fit = exp(- (Rating_problem - (Rating_user + 75))^2 / (2 * 180^2))
+  ```
+- Updates solver Elo dynamically with $K = 24$ after every attempt:
+  ```text
+  Rating_new = Rating_old + K * (Actual - Expected)
+  ```
+
+### 4. 📈 Adaptive Recommendation Ranking Engine
+Fuses BKT topic growth room with Elo difficulty fit to rank candidate problems:
+```text
+Composite Score = (w_zpd * ZPD_Fit) + (w_bkt * (1 - P(L_topic)))
 ```
-DSA problem reccommender/
+Supports multiple adaptive training modes:
+- **Balanced Growth (Default)**: $55\%$ Elo ZPD fit + $45\%$ BKT mastery growth.
+- **Weakness Focus**: $35\%$ Elo ZPD fit + $65\%$ BKT mastery growth (prioritizes low-mastery topics).
+- **Rating Push**: $75\%$ Elo ZPD fit + $25\%$ BKT mastery growth (challenges your rating frontier).
+- **Transparent Explainability**: Every problem displays a clear rationale explaining *why* it was surfaced.
+
+---
+
+## 🗺️ 10 Canonical DSA Topics
+
+Tags across Codeforces, LeetCode, CodeChef, and AtCoder are normalized into:
+1. **Dynamic Programming**
+2. **Graph Algorithms**
+3. **Trees & Binary Search Trees**
+4. **Binary Search & Two Pointers**
+5. **Greedy Algorithms**
+6. **Data Structures (Stack, Queue, Heap, DSU)**
+7. **Math & Number Theory**
+8. **Strings & Tries**
+9. **Bit Manipulation**
+10. **Backtracking & Recursion**
+
+---
+
+## 🏗️ System Architecture
+
+```text
+ADR Project
 ├── backend/
-│   ├── main.py                  # FastAPI entrypoint & static mount
-│   ├── config.py                # Pydantic settings & database URL
-│   ├── database.py              # Async SQLAlchemy session & table init
-│   ├── seed_data.py             # Problem catalog seed & Codeforces fetcher
-│   ├── models/
-│   │   ├── user.py              # User model with platform handles
-│   │   ├── submission.py        # Submission model with verdicts & tags
-│   │   ├── bkt_state.py         # TopicMasteryState model
-│   │   └── problem.py           # ProblemCatalog model
-│   ├── auth/
-│   │   ├── security.py          # Bcrypt hashing & verification
-│   │   ├── jwt.py               # JWT tokens
-│   │   └── dependencies.py      # get_current_user dependency
+│   ├── main.py                  # FastAPI server & SPA static handler
+│   ├── config.py                # Environment & settings
+│   ├── database.py              # Async SQLAlchemy engine & session maker
+│   ├── seed_data.py             # Curated problem catalog seeder
+│   ├── models/                  # User, UserSubmission, TopicMasteryState, ProblemCatalog
+│   ├── auth/                    # JWT authentication & bcrypt security
 │   ├── services/
-│   │   ├── canonical_topics.py  # 10 DSA topics & tag normalizers
 │   │   ├── bkt_model.py         # Bayesian Knowledge Tracing engine
-│   │   ├── elo_matcher.py       # Elo ZPD matching engine
+│   │   ├── elo_matcher.py       # Elo ZPD matching layer
 │   │   ├── ranking_engine.py    # Multi-criteria recommendation engine
-│   │   └── platforms/
-│   │       ├── codeforces.py    # Codeforces API client
-│   │       ├── leetcode.py      # LeetCode GraphQL client
-│   │       ├── codechef.py      # CodeChef profile scraper
-│   │       ├── atcoder.py       # AtCoder Kenkoooo client
-│   │       └── aggregator.py    # Cross-platform synchronization
-│   └── routers/
-│       ├── auth.py              # Register, login, update handles
-│       ├── platforms.py         # Sync & aggregated stats
-│       ├── bkt.py               # Mastery vector & simulation
-│       ├── recommendations.py   # Adaptive problem ranking
-│       └── problems.py          # Problem catalog browse & seed
+│   │   ├── canonical_topics.py  # 10 DSA topics taxonomy & tag mapper
+│   │   └── platforms/           # Codeforces, LeetCode, CodeChef, AtCoder connectors
+│   └── routers/                 # Auth, Platforms, BKT, Recommendations, Problems
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx              # Main dashboard orchestration
 │   │   ├── api.js               # Axios client with JWT interceptor
-│   │   └── components/
-│   │       ├── Header.jsx       # Brand, unified Elo, sync controls
-│   │       ├── PlatformCards.jsx# 4 platform rating cards & total solved
-│   │       ├── TopicBreakdownChart.jsx # Recharts topic solve breakdown
-│   │       ├── BktMasteryMatrix.jsx    # BKT mastery gauges & status
-│   │       ├── RecommendationFeed.jsx  # Adaptive problem feed + verdict logger
-│   │       ├── BktSimulator.jsx # Interactive algorithm sandbox
-│   │       ├── AuthModal.jsx    # Login / Register modal
-│   │       └── SettingsModal.jsx# Manage connected handles
-├── test_engine.py               # Complete backend verification suite
-├── test_learner.py              # Personalization test suite
-├── start_app.py                 # Server runner script
+│   │   └── components/          # PlatformCards, TopicChart, MasteryMatrix, RecFeed
+│   ├── dist/                    # Production built frontend assets
+│   └── vite.config.js           # Vite build & Tailwind configuration
+├── start_app.py                 # Unified 1-click startup script
+├── test_engine.py               # Complete test verification suite
 └── requirements.txt             # Python dependencies
 ```
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Quickstart Guide
 
 ### 1. Prerequisites
-- Python 3.10+ (tested with Python 3.13)
-- Node.js 20+
+- **Python 3.10+** (Tested on Python 3.13)
+- **Node.js 20+**
 
-### 2. Setup Virtual Environment & Dependencies
-```bash
+### 2. Setup Virtual Environment
+```powershell
+# Clone the repository
+git clone https://github.com/Deoid/Adaptive-DSA-recommender.git
+cd Adaptive-DSA-recommender
+
 # Activate virtual environment
 .\.venv\Scripts\Activate.ps1
 
-# Install Python requirements
+# Install requirements
 pip install -r requirements.txt
 ```
 
-### 3. Database Configuration (PostgreSQL or SQLite)
-By default, the application runs out-of-the-box on async SQLite (`sqlite+aiosqlite:///./dsa_adaptive.db`).
+### 3. Database Configuration
+By default, the application runs with **zero setup** on asynchronous SQLite (`sqlite+aiosqlite:///./dsa_adaptive.db`).
 
-To connect to **PostgreSQL**, set your connection string in `.env` (or environment variable):
+To switch to **PostgreSQL**, simply add your connection string to `.env`:
 ```env
-DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/dsa_adaptive
-```
-SQLAlchemy handles PostgreSQL (`asyncpg`) seamlessly with identical schema migrations and models.
-
-### 4. Build or Run Frontend
-The frontend is already built into `frontend/dist/` and served automatically by FastAPI.
-
-To run the frontend in Vite live reload dev mode:
-```bash
-cd frontend
-npm run dev
+DATABASE_URL=postgresql+asyncpg://postgres:your_password@localhost:5432/dsa_adaptive
+SECRET_KEY=your-secret-key-change-in-production
 ```
 
-### 5. Start the Application
-Run the unified server:
-```bash
+### 4. Launch the Application
+Run the unified launcher:
+```powershell
 python start_app.py
 ```
-- Web Application Dashboard: **http://localhost:8000**
-- Interactive Swagger API Docs: **http://localhost:8000/docs**
+- 🌐 **Web Dashboard:** [http://localhost:8000](http://localhost:8000)
+- 📖 **Interactive Swagger API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
-## 🧪 Running Verification Tests
-Execute the automated test suite testing auth, 4-platform sync, BKT sliding window, Elo ZPD matching, and recommendation generation:
-```bash
+## 🧪 Running Automated Tests
+
+Run the full end-to-end verification test suite:
+```powershell
 python test_engine.py
 ```
-
-To test recommendation personalization for a new intermediate learner:
-```bash
-python test_learner.py
-```
+Tests authentication, multi-platform sync, BKT sliding-window updates, Elo ZPD calculations, and recommendations ranking.
 
 ---
 
-## 📚 API Endpoints Overview
+## 📚 REST API Reference
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/auth/register` | Register coder with username, email, password & 4 platform handles |
-| `POST` | `/api/auth/login` | Authenticate and obtain JWT Bearer token |
-| `GET` | `/api/auth/me` | Fetch active user profile, handles, and overall Elo |
+| `POST` | `/api/auth/register` | Register user with platform handles |
+| `POST` | `/api/auth/login` | Authenticate user and issue JWT token |
+| `GET` | `/api/auth/me` | Fetch active profile and ratings |
 | `PUT` | `/api/auth/handles` | Update connected platform handles |
-| `POST` | `/api/platforms/sync` | Sync Codeforces, LeetCode, CodeChef & AtCoder, update BKT |
-| `GET` | `/api/platforms/stats` | Get 4 platform ratings, combined total solved, and topic breakdown |
-| `GET` | `/api/bkt/mastery` | Retrieve the per-topic Bayesian Knowledge Tracing vector |
-| `POST` | `/api/bkt/submit-verdict` | Log AC/WA verdict; updates BKT sliding window & Elo in real time |
-| `POST` | `/api/bkt/simulate` | Sandbox endpoint to simulate hypothetical verdict streams |
-| `GET` | `/api/recommendations` | Core adaptive recommendation engine endpoint |
-| `GET` | `/api/problems` | Browse and filter problem catalog |
+| `POST` | `/api/platforms/sync` | Sync data across CF, LC, CC, AC & update BKT |
+| `GET` | `/api/platforms/stats` | Get combined ratings, solves, and topic distribution |
+| `GET` | `/api/bkt/mastery` | Retrieve current BKT mastery vector $P(L_t)$ |
+| `POST` | `/api/bkt/submit-verdict` | Log problem verdict (AC/WA) and update skill state |
+| `GET` | `/api/recommendations` | Get personalized adaptive DSA recommendations |
+| `GET` | `/api/problems` | Search and filter the catalog problem pool |
+
+---
+
+## 📄 License
+MIT License. Built for competitive programmers, students, and engineers preparing for technical interviews.
